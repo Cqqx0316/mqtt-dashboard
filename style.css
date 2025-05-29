@@ -58,9 +58,18 @@ header {
 }
 
 .dashboard {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    gap: 20px;
+    display: flex;
+    gap: 32px;
+}
+
+.left-panel {
+    flex: 1 1 320px;
+    min-width: 260px;
+}
+
+.right-panel {
+    flex: 2 1 0;
+    min-width: 340px;
 }
 
 .controls, .topic-list {
@@ -163,35 +172,74 @@ button#disconnect-btn:hover {
     margin-right: 0;
 }
 
-.data-container {
-    grid-column: 1 / span 2;
-}
-
 .device-card {
-    background-color: var(--card-bg);
-    border-radius: 8px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
     padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
 }
 
-.device-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.device-card h3 {
-    color: var(--primary-color);
-    margin-bottom: 10px;
+.device-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
-.device-card .timestamp {
-    font-size: 0.8rem;
-    color: var(--text-light);
-    text-align: right;
+.device-name {
+    font-weight: bold;
+    font-size: 18px;
+    color: #343a40;
+}
+
+.device-status.online {
+    color: #2ecc71;
+}
+
+.device-status.offline {
+    color: #e74c3c;
+}
+
+.device-metrics {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.metric-card {
+    flex: 1 1 120px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    min-width: 100px;
+}
+
+.metric-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.heart-rate-icon { color: #e74c3c; }
+.spo2-icon { color: #3498db; }
+.fatigue-icon { color: #f39c12; }
+.bp-icon { color: #9b59b6; }
+.metric-label {
+    font-size: 14px;
+    color: #6c757d;
+}
+.metric-value {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 4px 0;
+}
+.metric-normal { color: #2ecc71; }
+.metric-warning { color: #f39c12; }
+.metric-danger { color: #e74c3c; }
+.metric-unit {
+    font-size: 12px;
+    color: #aaa;
 }
 
 pre {
@@ -232,4 +280,66 @@ footer a {
     .connection-status {
         margin-top: 10px;
     }
+}
+/* 设备卡片样式 */
+.device-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+    padding: 20px;
+}
+.device-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.device-name {
+    font-weight: bold;
+    font-size: 18px;
+    color: #343a40;
+}
+.device-status.online {
+    color: #2ecc71;
+}
+.device-status.offline {
+    color: #e74c3c;
+}
+.device-metrics {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.metric-card {
+    flex: 1 1 120px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    min-width: 100px;
+}
+.metric-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+.heart-rate-icon { color: #e74c3c; }
+.spo2-icon { color: #3498db; }
+.fatigue-icon { color: #f39c12; }
+.bp-icon { color: #9b59b6; }
+.metric-label {
+    font-size: 14px;
+    color: #6c757d;
+}
+.metric-value {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 4px 0;
+}
+.metric-normal { color: #2ecc71; }
+.metric-warning { color: #f39c12; }
+.metric-danger { color: #e74c3c; }
+.metric-unit {
+    font-size: 12px;
+    color: #aaa;
 }
