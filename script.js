@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 默认订阅一些主题
                 if (subscribedTopics.size === 0) {
-                    subscribeToTopic('testtopic/#');
+                    subscribeToTopic('031666');
                     subscribeToTopic('#');
                 }
             });
@@ -189,28 +189,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateDeviceDisplay() {
-        // 清空容器
-        while (devicesContainer.children.length > 1) {
-            devicesContainer.removeChild(devicesContainer.lastChild);
-        }
-        
-        // 添加所有设备数据
-        Object.entries(deviceData).forEach(([deviceId, data]) => {
-            const deviceCard = document.createElement('div');
-            deviceCard.className = 'device-card';
-            deviceCard.innerHTML = `
-                <h3>
-                    ${deviceId}
-                    <small>(${data.topic})</small>
-                </h3>
-                <div class="data-content">
-                    ${typeof data.value === 'object' 
-                        ? `<pre>${JSON.stringify(data.value, null, 2)}</pre>`
-                        : `<div>${data.value}</div>`}
+        let html = '<h2>设备数据</h2>';
+        Object.values(deviceData).forEach(d => {
+            html += `
+                <div style="margin-bottom:16px;">
+                    ${renderDeviceCardHTML(d.value)}
                 </div>
-                <div class="timestamp">更新时间: ${data.timestamp}</div>
             `;
-            devicesContainer.appendChild(deviceCard);
         });
+        document.getElementById('devices-container').innerHTML = html;
     }
+    
+    // 辅助函数，返回卡片HTML字符串
+    function renderDeviceCardHTML(data) {
+        return `
+            <div class="device-card">
+                <div class="device-header">
+                    <span class="device-name"><i class="bi bi-cpu"></i> ${data.username ?? '--'}</span>
+                    <span class="device-status ${data.online ? 'online' : 'offline'}">
+                        <i class="bi bi-circle-fill"></i> ${data.online ? '在线' : '离线'}
+                    </span>
+                </div>
+                <div class="device-metrics">
+                    <div class="metric-card">
+                        <div class="metric-icon heart-rate-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+                        <div class="metric-label">心率</div>
+                        <div class="metric-value metric-normal">${data.heartRate ?? '--'}</div>
+                        <div class="metric-unit">BPM</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon spo2-icon"><i class="bi bi-droplet-fill"></i></div>
+                        <div class="metric-label">血氧</div>
+                        <div class="metric-value metric-normal">${data.spo2 ?? '--'}</div>
+                        <div class="metric-unit">%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon fatigue-icon"><i class="bi bi-battery-half"></i></div>
+                        <div class="metric-label">疲劳</div>
+                        <div class="metric-value metric-warning">${data.fatigue ?? '--'}</div>
+                        <div class="metric-unit"></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon bp-icon"><i class="bi bi-activity"></i></div>
+                        <div class="metric-label">血压</div>
+                        <div class="metric-value metric-normal">${data.systolic ?? '--'}/${data.diastolic ?? '--'}</div>
+                        <div class="metric-unit">mmHg</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // 你在收到MQTT消息后调用
+    // 例如：client.on('message', function (topic, message) {
+    //   const data = JSON.parse(message.toString());
+    //   renderDeviceCard(data);
+    // });
+    
+    // 测试用例（可删除）：
+    /*
+    window.onload = function() {
+        renderDeviceCard({
+            username: document.getElementById('username').value,
+            online: true,
+            heartRate: 78,
+            spo2: 98,
+            fatigue: 55,
+            systolic: 120,
+            diastolic: 80
+        });
+    };
+    */
 });
