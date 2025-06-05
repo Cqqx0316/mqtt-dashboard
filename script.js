@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let client = null;
     const subscribedTopics = new Set();
     const deviceData = {};
+    const deviceCards = {}; // 缓存设备卡片的对象
+    let selectedUser = ''; // 需要显示设备数据的用户，比如"用户"：user1、user2...
     
     // MQTT代理配置
     const mqttConfig = {
@@ -189,19 +191,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateDeviceDisplay() {
-        let html = '<h2>设备数据</h2>';
-        Object.values(deviceData).forEach(d => {
-            html += `
-                <div style="margin-bottom:16px;">
-                    ${renderDeviceCardHTML(d.value)}
-                </div>
-            `;
+        // 遍历所有设备数据，并局部更新相关设备的卡片
+        Object.entries(deviceData).forEach(([deviceId, dataObj]) => {
+            const data = dataObj.value;
+
+            // 判断是否匹配筛选条件
+            if (selectedUser && data.username !== selectedUser) {
+                // 如果不是目标用户，显示目标用户的卡片
+                const targetUserData = Object.values(deviceData).find(d => d.value.username === selectedUser);
+                if (targetUserData) {
+                    const cardHTML = renderDeviceCardHTML(targetUserData.value);
+                    if (cardHTML) {
+                        if (deviceCards[deviceId]) {
+                            deviceCards[deviceId].innerHTML = `
+                                <div style="margin-bottom:16px;">
+                                    ${cardHTML}
+                                </div>
+                            `;
+                            deviceCards[deviceId].style.display = 'block'; // 显示目标用户卡片
+                        } else {
+                            const card = document.createElement('div');
+                            card.style.marginBottom = '16px';
+                            card.innerHTML = cardHTML;
+                            deviceCards[deviceId] = card;
+                            devicesContainer.appendChild(card);
+                        }
+                    }
+                }
+            } else {
+                // 对于目标用户或未设置筛选条件的记录
+                const cardHTML = renderDeviceCardHTML(data);
+                if (cardHTML) {
+                    if (deviceCards[deviceId]) {
+                        deviceCards[deviceId].innerHTML = `
+                            <div style="margin-bottom:16px;">
+                                ${cardHTML}
+                            </div>
+                        `;
+                        deviceCards[deviceId].style.display = 'block'; // 显示卡片
+                    } else {
+                        const card = document.createElement('div');
+                        card.style.marginBottom = '16px';
+                        card.innerHTML = cardHTML;
+                        deviceCards[deviceId] = card;
+                        devicesContainer.appendChild(card);
+                    }
+                }
+            }
         });
-        document.getElementById('devices-container').innerHTML = html;
     }
     
     // 辅助函数，返回卡片HTML字符串
     function renderDeviceCardHTML(data) {
+        // 判断是否为目标用户
+        if (data.username !== selectedUser) {
+        return null; // 如果不是目标用户，直接结束函数，不返回任何内容
+    }
+
         return `
             <div class="device-card">
                 <div class="device-header">
@@ -260,4 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     */
+    
+    document.getElementById('filter-btn').addEventListener('click', () => {
+        selectedUser = document.getElementById('user-filter').value.trim();
+        updateDeviceDisplay();
+    });
 });
