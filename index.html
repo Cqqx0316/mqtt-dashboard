@@ -43,10 +43,18 @@
                     </div>
                 </div>
             </div>
+            
             <div class="right-panel">
+                <!-- 用户数据过滤区域 -->
+                <div class="filter-container">
+                    <label for="user-filter">请输入要查看的用户名（例如 user1）：</label>
+                    <input id="user-filter" type="text" placeholder="user1">
+                    <button id="filter-btn">筛选</button>
+                </div>
+                <!-- 设备数据展示区域 -->
                 <div class="data-container" id="devices-container">
                     <h2>设备数据</h2>
-                    <!-- 设备数据卡片由 JS 动态生成 -->
+                    <!-- 设备数据卡片由 script.js 动态生成 -->
                 </div>
             </div>
         </div>
