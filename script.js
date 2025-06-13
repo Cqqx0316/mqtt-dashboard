@@ -2,80 +2,70 @@ document.addEventListener('DOMContentLoaded', () => {
     // 元素
     const statusDot = document.getElementById('status-indicator');
     const connectionText = document.getElementById('connection-text');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
     const connectBtn = document.getElementById('connect-btn');
     const disconnectBtn = document.getElementById('disconnect-btn');
     const topicInput = document.getElementById('topic-input');
     const subscribeBtn = document.getElementById('subscribe-btn');
     const topicsList = document.getElementById('topics');
     const devicesContainer = document.getElementById('devices-container');
-    
+
     // 全局变量
     let client = null;
     const subscribedTopics = new Set();
     const deviceData = {};
-    const deviceCards = {}; // 缓存设备卡片的对象
-    let selectedUser = ''; // 需要显示设备数据的用户，比如"用户"：user1、user2...
-    
+    const deviceCards = {};
+    let selectedUser = '';
+
     // MQTT代理配置
     const mqttConfig = {
         host: '47.98.39.99',
-        port: 1885,
+        port: 8083,
         path: '/mqtt',
         clientId: `mqtt_dashboard_${Date.now()}`
     };
-    
+
     // 连接MQTT代理
     connectBtn.addEventListener('click', () => {
-        const username = usernameInput.value;
-        const password = passwordInput.value;
-        
-        if (!username || !password) {
-            alert('请输入用户名和密码');
-            return;
-        }
-        
-        const connectUrl = `wss://${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`;
-        
+        // 你可以根据服务器实际情况切换 ws:// 或 wss://
+        const connectUrl = `ws://${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`;
+        // const connectUrl = `wss://${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`;
+
         try {
             client = mqtt.connect(connectUrl, {
                 clientId: mqttConfig.clientId,
-                username: username,
-                password: password,
                 clean: true,
                 reconnectPeriod: 5000,
                 connectTimeout: 30 * 1000
             });
-            
+
             // 更新UI
             connectBtn.disabled = true;
             connectionText.textContent = '正在连接...';
-            
+
             // 监听连接事件
             client.on('connect', () => {
                 console.log('MQTT连接成功!');
                 statusDot.classList.add('connected');
                 connectionText.textContent = '已连接';
                 disconnectBtn.disabled = false;
-                
+
                 // 重新订阅所有主题
                 subscribedTopics.forEach(topic => {
                     client.subscribe(topic);
                 });
-                
+
                 // 默认订阅一些主题
                 if (subscribedTopics.size === 0) {
                     subscribeToTopic('031666');
                     subscribeToTopic('#');
                 }
             });
-            
+
             // 监听消息事件
             client.on('message', (topic, message) => {
                 try {
                     console.log(`收到消息: ${topic} - ${message.toString()}`);
-                    
+
                     // 解析消息
                     let payload;
                     try {
@@ -83,32 +73,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     } catch (e) {
                         payload = message.toString();
                     }
-                    
+
                     // 确定设备ID
                     const parts = topic.split('/');
                     const deviceId = parts.length > 1 ? parts[1] : topic;
-                    
+
                     // 更新设备数据
                     deviceData[deviceId] = {
                         value: payload,
                         timestamp: new Date().toLocaleString(),
                         topic: topic
                     };
-                    
+
                     // 更新UI
                     updateDeviceDisplay();
                 } catch (error) {
                     console.error('处理消息时出错:', error);
                 }
             });
-            
+
             // 监听错误事件
             client.on('error', (error) => {
                 console.error('MQTT错误:', error);
                 statusDot.classList.remove('connected');
                 connectionText.textContent = `连接错误: ${error.message}`;
             });
-            
+
             // 监听断开连接事件
             client.on('close', () => {
                 console.log('MQTT连接已关闭');
@@ -117,13 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
             });
-            
+
         } catch (error) {
             console.error('创建MQTT客户端时出错:', error);
             alert(`连接错误: ${error.message}`);
         }
     });
-    
+
     // 断开连接
     disconnectBtn.addEventListener('click', () => {
         if (client && client.connected) {
@@ -132,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             connectBtn.disabled = false;
         }
     });
-    
+
     // 订阅主题
     subscribeBtn.addEventListener('click', () => {
         const topic = topicInput.value.trim();
@@ -140,17 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('请输入要订阅的主题');
             return;
         }
-        
+
         subscribeToTopic(topic);
         topicInput.value = '';
     });
-    
+
     function subscribeToTopic(topic) {
         if (subscribedTopics.has(topic)) {
             alert(`已经订阅了主题 "${topic}"`);
             return;
         }
-        
+
         if (client && client.connected) {
             client.subscribe(topic, (err) => {
                 if (!err) {
@@ -164,17 +154,17 @@ document.addEventListener('DOMContentLoaded', () => {
             addTopicToList(topic);
         }
     }
-    
+
     function addTopicToList(topic) {
         subscribedTopics.add(topic);
-        
+
         const li = document.createElement('li');
         li.innerHTML = `
             <span>${topic}</span>
             <button class="unsubscribe-btn" data-topic="${topic}">取消订阅</button>
         `;
         topicsList.appendChild(li);
-        
+
         // 添加取消订阅事件
         const unsubBtn = li.querySelector('.unsubscribe-btn');
         unsubBtn.addEventListener('click', () => {
@@ -182,14 +172,14 @@ document.addEventListener('DOMContentLoaded', () => {
             li.remove();
         });
     }
-    
+
     function unsubscribeFromTopic(topic) {
         if (client && client.connected) {
             client.unsubscribe(topic);
         }
         subscribedTopics.delete(topic);
     }
-    
+
     function updateDeviceDisplay() {
         // 遍历所有设备数据，并局部更新相关设备的卡片
         Object.entries(deviceData).forEach(([deviceId, dataObj]) => {
@@ -208,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ${cardHTML}
                                 </div>
                             `;
-                            deviceCards[deviceId].style.display = 'block'; // 显示目标用户卡片
+                            deviceCards[deviceId].style.display = 'block';
                         } else {
                             const card = document.createElement('div');
                             card.style.marginBottom = '16px';
@@ -228,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${cardHTML}
                             </div>
                         `;
-                        deviceCards[deviceId].style.display = 'block'; // 显示卡片
+                        deviceCards[deviceId].style.display = 'block';
                     } else {
                         const card = document.createElement('div');
                         card.style.marginBottom = '16px';
@@ -240,14 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
     // 辅助函数，返回卡片HTML字符串
     function renderDeviceCardHTML(data) {
-        // 判断是否为目标用户
-        if (data.username !== selectedUser) {
-        return null; // 如果不是目标用户，直接结束函数，不返回任何内容
-    }
-
         return `
             <div class="device-card">
                 <div class="device-header">
@@ -285,28 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
     }
-    
-    // 你在收到MQTT消息后调用
-    // 例如：client.on('message', function (topic, message) {
-    //   const data = JSON.parse(message.toString());
-    //   renderDeviceCard(data);
-    // });
-    
-    // 测试用例（可删除）：
-    /*
-    window.onload = function() {
-        renderDeviceCard({
-            username: document.getElementById('username').value,
-            online: true,
-            heartRate: 78,
-            spo2: 98,
-            fatigue: 55,
-            systolic: 120,
-            diastolic: 80
-        });
-    };
-    */
-    
+
     document.getElementById('filter-btn').addEventListener('click', () => {
         selectedUser = document.getElementById('user-filter').value.trim();
         updateDeviceDisplay();
