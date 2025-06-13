@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 连接MQTT代理
     connectBtn.addEventListener('click', () => {
         // 你可以根据服务器实际情况切换 ws:// 或 wss://
-        const connectUrl = `ws://${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`;
+        const connectUrl = `wss://${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`;
         // const connectUrl = `wss://${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`;
 
         try {
