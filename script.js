@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // MQTT代理配置
     const mqttConfig = {
-        host: 'r3e5f9b6.ala.cn-hangzhou.emqxsl.cn',
-        port: 8084,
+        host: '47.98.39.99',
+        port: 1885,
         path: '/mqtt',
         clientId: `mqtt_dashboard_${Date.now()}`
     };
